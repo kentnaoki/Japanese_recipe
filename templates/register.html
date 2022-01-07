@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block content %}
+<br>
+<div class="row">
+    <div class="col-md-10">
+        <h1>User Registeration</h1>
+    </div>
+    <div class="col-md-2">
+        <a href="/admin" class="btn btn-primary">login</a>
+    </div>
+</div>
+
+<hr>
+<form action="/register" method="post">
+    <br>
+    <p>
+        username<br>
+        <input type="text" size="30" maxlength="20" name="username" value="{{username}}" placeholder="more than 4 characters and less than 20 characters.">
+    </p>
+    <br>
+    <p>
+        password<br>
+        <input type="password" size="30" maxlength="20" name="password" placeholder="more than 6 characters and less than 20 characters.">
+    </p>
+    <br>
+    <p>
+        password (confirm)<br>
+        <input type="password" size="30" maxlength="20" name="password_tmp" placeholder="more than 6 characters and less than 20 characters.">
+    </p>
+    <br>
+    <p>
+        email<br>
+        <input type="email" size="40" maxlength="60" name="mail" placeholder="sample@example.com">
+    </p>
+    <br><br>
+    <button type="submit" class="btn btn-primary">register</button>
+</form>
+
+<p class="text-danger">{% for e in error %}{{ e }}<br>{% endfor %}</p>
+
+{% endblock %}
