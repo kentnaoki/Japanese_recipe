@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Form
 from starlette.templating import Jinja2Templates
 from starlette.requests import Request
 import db
@@ -21,6 +21,7 @@ from datetime import datetime, timedelta
 from auth import auth
 
 from starlette.responses import RedirectResponse
+
 
 pattern = re.compile(r'\w{4,20}')  # 任意の4~20の英数字を示す正規表現
 pattern_pw = re.compile(r'\w{6,20}')  # 任意の6~20の英数字を示す正規表現
@@ -52,7 +53,7 @@ def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security
 
     """ [new] 今日の日付と来週の日付"""
     today = datetime.now()
-    next_w = today + timedelta(days=7)  # １週間後の日付
+    next_w = today + timedelta(days=7)  #１週間後の日付
 
     # 該当ユーザがいない場合
     if user is None or user.password != password:
@@ -173,7 +174,7 @@ async def done(request: Request, credentials: HTTPBasicCredentials = Depends(sec
 async def add(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
 
     username = auth(credentials)
- 
+
     # ユーザ情報を取得
     user = db.session.query(User).filter(User.username == username).first()
     
@@ -196,3 +197,63 @@ async def add(request: Request, credentials: HTTPBasicCredentials = Depends(secu
     db.session.close()
  
     return RedirectResponse('/admin')
+
+def delete(request: Request, t_id, credentials: HTTPBasicCredentials = Depends(security)):
+
+    username = auth(credentials)
+
+    user = db.session.query(User).filter(User.username == username).first()
+
+    task = db.session.query(Task).filter(Task.id == t_id).first()
+
+    if task.user_id != user.id:
+        return RedirectResponse('/admin')
+
+    db.session.delete(task)
+    db.session.commit()
+    db.session.close()
+
+    return RedirectResponse('/admin')
+
+def get(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
+
+    username = auth(credentials)
+
+    user = db.session.query(User).filter(User.username == username).first()
+    task = db.session.query(Task).filter(Task.user_id == user.id).all()
+
+    db.session.close()
+
+    task = [{
+        'id': t.id,
+        'content': t.content,
+        'deadline': t.deadline.strftime('%Y-%m-%d %H:%M:%S'),
+        'published': t.date.strftime('%Y-%m-%d %H:%M:%S'),
+        'done': t.done,
+    } for t in task]
+
+    return task
+
+async def insert(request: Request, content: str = Form(...), deadline: str = Form(...), credentials: HTTPBasicCredentials= Depends(security)):
+    username = auth(credentials)
+ 
+    # ユーザ情報を取得
+    user = db.session.query(User).filter(User.username == username).first()
+ 
+    # タスクを追加
+    task = Task(user.id, content, datetime.strptime(deadline, '%Y-%m-%d_%H:%M:%S'))
+ 
+    db.session.add(task)
+    db.session.commit()
+ 
+    # テーブルから新しく追加したタスクを取得する
+    task = db.session.query(Task).all()[-1]
+    db.session.close()
+ 
+    # 新規タスクをJSONで返す
+    return {
+        'id': task.id,
+        'content': task.content,
+        'deadline': task.deadline.strftime('%Y-%m-%d %H:%M:%S'),
+        'published': task.date.strftime('%Y-%m-%d %H:%M:%S'),
+        'done': task.done,}
