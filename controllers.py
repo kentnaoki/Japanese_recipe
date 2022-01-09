@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, Depends, HTTPException
 from starlette.templating import Jinja2Templates
 from starlette.requests import Request
 import db
 from models import User, Task
-from fastapi import Depends, HTTPException
+from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from starlette.status import HTTP_401_UNAUTHORIZED
@@ -14,32 +14,43 @@ from models import User, Task
 import hashlib
 
 import re
-import requests
 
 from mycalendar import MyCalendar
 from datetime import datetime, timedelta
 from auth import auth
 
 from starlette.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+
+import requests
+import json
+
+app = FastAPI(
+    title = "Japanese food recipe",
+    description = "Authentic Japanese food recipe for people who live outside Japan",
+    version = "1.0"
+)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 pattern = re.compile(r'\w{4,20}')  # 任意の4~20の英数字を示す正規表現
 pattern_pw = re.compile(r'\w{6,20}')  # 任意の6~20の英数字を示す正規表現
 pattern_mail = re.compile(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$')
 
-app = FastAPI(
-    title = "Japanese food recipe",
-    description = "Authentic Japanese food recipe for people who live outside Japan",
-    version = "0.9 beta"
-)
 
 templates = Jinja2Templates(directory="templates")
 jinja_env = templates.env
 
-def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request}, )
-
-security = HTTPBasic()
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    url = "https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&applicationId=1082013691690447331"
+    api_id = requests.get(url).json()
+    categories = {}
+    for category in api_id["result"]["large"]:
+        categories[category["categoryName"]] = category["categoryUrl"]
+    return templates.TemplateResponse("index.html", {"request": request, "categories": categories} )
+    
+'''security = HTTPBasic()
 
 def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
     # Basic認証で受け取った情報
@@ -256,4 +267,4 @@ async def insert(request: Request, content: str = Form(...), deadline: str = For
         'content': task.content,
         'deadline': task.deadline.strftime('%Y-%m-%d %H:%M:%S'),
         'published': task.date.strftime('%Y-%m-%d %H:%M:%S'),
-        'done': task.done,}
+        'done': task.done,}'''

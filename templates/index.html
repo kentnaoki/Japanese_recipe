@@ -3,14 +3,26 @@
 <br>
 <div class="row">
     <div class="col-md-10">
-        <h1>Welcome to Simple toDo application</h1>
+        <h1>Welcome to the Japanese Food Recipe website!</h1>
     </div>
+    <!--
     <div class="col-md-2">
         <a href="/admin" class="btn btn-primary">Login</a>
     </div>
+    -->
 </div>
  
 <hr>
-<p>This is a simple toDo application powered by <b>FastAPI</b>!</p>
- 
+<div class="description">
+    <p>This is a website to introduce the authentic Japanese recipe</p>
+</div>
+
+<br>
+<h2>Categories</h2>
+<br>
+    <ul id="nav">
+        {% for category, url in categories.items() %}
+            <li><a href={{ url }}>{{ category }}</a></li>
+        {% endfor %}
+    </ul>
 {% endblock %}
