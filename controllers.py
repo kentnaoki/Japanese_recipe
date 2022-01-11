@@ -46,7 +46,11 @@ async def index(request: Request):
     url = "https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&applicationId=1082013691690447331"
     api_id = requests.get(url).json()
     categories = {}
-    for category in api_id["result"]["large"]:
+    
+    for index, category in enumerate(api_id["result"]["large"]):
+        #result = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": api_id["result"]["large"][index]["categoryName"], }, )
+        #categoryName = result.json()["translations"][0]["text"]
+        #categories[categoryName] = category["categoryUrl"]
         categories[category["categoryName"]] = category["categoryUrl"]
     return templates.TemplateResponse("index.html", {"request": request, "categories": categories} )
     
