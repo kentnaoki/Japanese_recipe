@@ -13,6 +13,12 @@ header {
   text-decoration: none;
 }
 
+.logo p {
+  font-size: 10px;
+  color: white;
+  margin: 0;
+}
+
 .main {
     background-color: white;
     color: black;
@@ -27,17 +33,25 @@ header {
 }
 
 .col-md-10 {
-  margin:0 auto;
+  margin: 0 auto;
 }
+
 .col-md-10 h1 {
   color: black;
   font-size: 30px;
 }
 
+.login {
+  margin: 0 auto;
+}
 
-.description p {
-    text-align:center;
-    display: inline-block;
+.categories {
+  width: 85%;
+  margin: auto;
+}
+
+.categories h2 {
+  padding-left: 2em;
 }
 
 #nav {
