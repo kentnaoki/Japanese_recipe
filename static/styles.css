@@ -1,12 +1,39 @@
+header {
+  background-color: black;
+}
+.logo {
+  text-align: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.logo a {
+  color: white;
+  text-decoration: none;
+}
+
 .main {
-    text-align: center;
     background-color: white;
     color: black;
 }
 
-.col-md-10 {
-  text-align: right;
+
+
+.row {
+  text-align: center;
+  padding-top: 1.5em;
+  padding-bottom: 0.5em;
 }
+
+.col-md-10 {
+  margin:0 auto;
+}
+.col-md-10 h1 {
+  color: black;
+  font-size: 30px;
+}
+
 
 .description p {
     text-align:center;
