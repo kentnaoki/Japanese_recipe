@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-10">
+        <h1>Welcome to the Japanese Food Recipe website!</h1>
+    </div>
+    <div class="login">
+        <a href="#" class="btn btn-dark">Login</a>
+    </div>
+</div>
+<hr>
+<br>
+
+<div class="categories">
+    <h2>categoryName</h2>
+    <br>
+        {% for recipe in rankingRecipe %}
+            <div class="each-food">
+                <div class="food-image">
+                    <p class="rank">{{ loop.index }}</p>
+                    <a href="#"><img src="{{ recipe.foodImageUrl }}"></a>
+                </div>
+                <div class="recipe-text">
+                    <div class="recipe-title">
+                        <p><a href="#">{{ recipe.recipeTitle }}</a></p>
+                    </div>
+                    <div class="recipe-description">
+                        <p>{{ recipe.recipeDescription }}</p>
+                    </div>
+                </div>
+            </div>
+            <br>
+        {% endfor %}
+</div>
+{% endblock %}

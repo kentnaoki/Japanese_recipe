@@ -5,7 +5,7 @@ header {
   text-align: center;
   padding-top: 10px;
   padding-bottom: 10px;
-  font-size: 1.5rem;
+  font-size: 1.7rem;
 }
 
 .logo a {
@@ -14,7 +14,7 @@ header {
 }
 
 .logo p {
-  font-size: 10px;
+  font-size: 12px;
   color: white;
   margin: 0;
 }
@@ -23,8 +23,6 @@ header {
     background-color: white;
     color: black;
 }
-
-
 
 .row {
   text-align: center;
@@ -46,25 +44,73 @@ header {
 }
 
 .categories {
-  width: 85%;
+  width: 90%;
   margin: auto;
 }
 
 .categories h2 {
-  padding-left: 2em;
+  width: 70%;
+  margin-left: 100px;
 }
 
 #nav {
     list-style: none;
     overflow: hidden;
+    text-align: center;
+    margin: 0 auto;
   }
    
+.each-recipe {
+  display: inline-block;
+  padding-bottom: 50px;
+  vertical-align: top;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
 #nav li {
-    width: 140px;
+    width: 250px;
     text-align: center;
-    float: left;
-    display: block;
     height: 50px;
-    line-height: 50px;
-    margin-right: 2px;
+    line-height: 25px;
+    margin: 0 auto;
+    padding: 10px;
   }
+
+#nav a {
+    color: black;
+}
+
+
+/* ranking.html */
+
+.each-food {
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+
+.food-image {
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 10px;
+}
+
+.rank {
+  font-size: 1.5em;
+}
+
+.recipe-text {
+  display: inline-block;
+  width: 70%;
+  margin-left: 20px;
+}
+
+.recipe-title {
+  text-align: center;
+}
+
+.recipe-title a {
+  color: black;
+  font-weight: bold;
+}
