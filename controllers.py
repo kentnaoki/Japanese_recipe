@@ -26,6 +26,7 @@ from fastapi.staticfiles import StaticFiles
 import requests
 import json
 from typing import Optional
+import time
 
 app = FastAPI(
     title = "Japanese food recipe",
@@ -75,18 +76,15 @@ async def index(request: Request):
     # Large Category
     for index, category_json in enumerate(api_category["result"]["large"]):
         category = Category(category_json["categoryName"], category_json["categoryId"])
+        f = open(f'./images/images_large/{category.categoryId}.txt', 'r')
+        data = f.read()
+        f.close()
+        category.add_imageUrl(data)
         categories.append(category)
-        result = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": api_id["result"]["large"][index]["categoryName"], }, )
+        categories[index] = category
+        '''result = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": api_id["result"]["large"][index]["categoryName"], }, )
         categoryName = result.json()["translations"][0]["text"]
-        categories[categoryName] = category["categoryUrl"]
-
-    for index, category_object in enumerate(categories):
-        id = category_object.categoryId
-        rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}"
-        imageUrl = requests.get(rankingUrl_Json).json()["result"][0]["mediumImageUrl"]
-        category_object.add_imageUrl(imageUrl)
-        categories[index] = category_object
-
+        categories[categoryName] = category["categoryUrl"]'''
     
     return templates.TemplateResponse("index.html", {"request": request, "categories": categories} )
 
@@ -95,7 +93,7 @@ async def read_item(request: Request, large_categoryId: str):
 
     rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={large_categoryId}"
     rankingUrl_Json = requests.get(rankingUrl_Json).json()
-    '''Json_result = rankingUrl_Json["result"]
+    Json_result = rankingUrl_Json["result"]
 
     Recipe.recipe_list = []
     
@@ -105,7 +103,7 @@ async def read_item(request: Request, large_categoryId: str):
     
     rankingRecipe = Recipe.recipe_list
 
-    return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe})'''
+    return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe})
 
 
 '''security = HTTPBasic()
