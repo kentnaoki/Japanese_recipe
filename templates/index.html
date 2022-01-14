@@ -12,7 +12,23 @@
 <br>
 
 <div class="categories">
-    <h2>Categories</h2>
+    <div class="head">
+        <div class="head-title">
+            <h2>Categories</h2>
+        </div>
+        <div class="category-size">
+            <div class="large">
+                <button type="button" disabled>Large</button>
+            </div>
+            <div class="medium">
+                <button type="button" onclick="location.href='/medium'">Medium</button>
+            </div>
+            <div class="small">
+                <button type="button" onclick="location.href='/small'">Small</button>
+            </div>
+        </div>
+    </div>
+    
     <br>
     <ul id="nav">
         {% for category in categories %}

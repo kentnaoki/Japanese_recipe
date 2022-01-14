@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-10">
+        <h1>Welcome to the Japanese Food Recipe website!</h1>
+    </div>
+    <div class="login">
+        <a href="#" class="btn btn-dark">Login</a>
+    </div>
+</div>
+<hr>
+<br>
+
+<div class="categories">
+    <div class="head">
+        <div class="head-title">
+            <h2>Categories</h2>
+        </div>
+        <div class="category-size">
+            <div class="large">
+                <button type="button" onclick="location.href='/'">Large</button>
+            </div>
+            <div class="medium">
+                <button type="button" onclick="location.href='/medium'">Medium</button>
+            </div>
+            <div class="small">
+                <button type="button" disabled>Small</button>
+            </div>
+        </div>
+    </div>
+    
+    <br>
+    <ul id="nav">
+        {% for category in categories %}
+            <div class="each-recipe">
+                <a href="{{ category.categoryId }}"><img src="{{ category.imageUrl }}"></a>
+                <li><a href="{{ category.categoryId }}">{{ category.categoryName }}</a></li>
+            </div>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

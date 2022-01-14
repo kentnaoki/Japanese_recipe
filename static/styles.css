@@ -48,9 +48,33 @@ header {
   margin: auto;
 }
 
-.categories h2 {
-  width: 70%;
-  margin-left: 100px;
+.head-title {
+  display: inline-block;
+}
+
+.category-size {
+  display: inline-block;
+}
+
+.large {
+  display: inline-block;
+}
+.large button {
+  font-size: 15px;
+}
+
+.medium {
+  display: inline-block;
+}
+.medium button {
+  font-size: 15px;
+}
+
+.small {
+  display: inline-block;
+}
+.small button {
+  font-size: 15px;
 }
 
 #nav {

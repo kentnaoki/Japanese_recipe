@@ -28,6 +28,7 @@ import json
 from typing import Optional
 import time
 
+
 app = FastAPI(
     title = "Japanese food recipe",
     description = "Authentic Japanese food recipe for people who live outside Japan",
@@ -75,7 +76,7 @@ async def index(request: Request):
 
     # Large Category
     for index, category_json in enumerate(api_category["result"]["large"]):
-        category = Category(category_json["categoryName"], category_json["categoryId"])
+        category = Category(category_json["categoryName"], int(category_json["categoryId"]))
         f = open(f'./images/images_large/{category.categoryId}.txt', 'r')
         data = f.read()
         f.close()
@@ -89,7 +90,7 @@ async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "categories": categories} )
 
 @app.get("/{large_categoryId}", response_class=HTMLResponse)
-async def read_item(request: Request, large_categoryId: str):
+async def read_item(request: Request, large_categoryId: int):
 
     rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={large_categoryId}"
     rankingUrl_Json = requests.get(rankingUrl_Json).json()
@@ -105,6 +106,41 @@ async def read_item(request: Request, large_categoryId: str):
 
     return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe})
 
+@app.get("/{medium}", response_class=HTMLResponse)
+async def read_medium(request: Request, medium: str):
+
+    # list of objects of category
+    mediumCategories = []
+
+    # Large Category
+    for index, category_json in enumerate(api_category["result"]["medium"]):
+        category = Category(category_json["categoryName"], int(category_json["categoryId"]))
+        f = open(f'./images/images_medium/{category.categoryId}.txt', 'r')
+        data = f.read()
+        f.close()
+        category.add_imageUrl(data)
+        mediumCategories.append(category)
+        mediumCategories[index] = category
+
+    return ("medium.html", {"request": request, "mediumCategories": mediumCategories})
+
+@app.get("/small", response_class=HTMLResponse)
+async def read_small(request: Request):
+
+    # list of objects of category
+    smallCategories = []
+
+    # Large Category
+    for index, category_json in enumerate(api_category["result"]["small"]):
+        category = Category(category_json["categoryName"], category_json["categoryId"])
+        f = open(f'./images/images_small/{category.categoryId}.txt', 'r')
+        data = f.read()
+        f.close()
+        category.add_imageUrl(data)
+        smallCategories.append(category)
+        smallCategories[index] = category
+
+    return ("small.html", {"request": request, "smallCategories": smallCategories})
 
 '''security = HTTPBasic()
 

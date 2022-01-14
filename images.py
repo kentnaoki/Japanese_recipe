@@ -1,26 +1,32 @@
+from cgitb import small
 import time
 import requests
 import json
+import os
 
 class Category:
-        def __init__(self, categoryName, categoryId):
-            self.categoryName = categoryName
-            self.categoryId = categoryId
+    def __init__(self, categoryId):
+        self.categoryId = categoryId
 
-        def add_imageUrl(self, imageUrl):
-            self.imageUrl = imageUrl
+    def add_imageUrl(self, imageUrl):
+        self.imageUrl = imageUrl
 
-class Recipe:
-        def __init__(self, foodImageUrl, recipeId, recipeIndication, recipeTitle, recipeUrl, recipeDescription):
-            self.foodImageUrl = foodImageUrl
-            self.recipeId = recipeId
-            self.recipeIndication = recipeIndication
-            self.recipeTitle = recipeTitle
-            self.recipeUrl = recipeUrl
-            self.recipeDescription = recipeDescription
+class MediumCategory:
+    def __init__(self, categoryId, mediumCategoryId):
+        self.categoryId = categoryId
+        self.mediumCategoryId = mediumCategoryId
 
-        def add_recipe(self):
-            Recipe.recipe_list.append(self)
+    def add_mediumImageUrl(self, mediumImageUrl):
+        self.mediumImageUrl = mediumImageUrl
+
+class SmallCategory:
+    def __init__(self, categoryId, mediumCategoryId, smallCategoryId):
+        self.categoryId = categoryId
+        self.mediumCategoryId = mediumCategoryId
+        self.smallCategoryId = smallCategoryId
+
+    def add_smallImageUrl(self, smallImageUrl):
+        self.smallImageUrl = smallImageUrl
 
 img_largeCategory = []
 
@@ -28,16 +34,65 @@ url_category = "https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170
 api_category = requests.get(url_category).json()
 
 def get_images_largeCategory():
-    for index, category_json in enumerate(api_category["result"]["large"]):
-        category = Category(category_json["categoryName"], category_json["categoryId"])
-        id = category.categoryId
+    for category_json in api_category["result"]["large"]:
+        largeUrl = category_json["categoryUrl"]
+        id = int((largeUrl.split('/')[-2]).split('-')[0])
+        category = Category(id)
+        time.sleep(1)
         rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}"
-        imageUrl = requests.get(rankingUrl_Json).json()['result'][0]['mediumImageUrl']
+        imageUrl = requests.get(rankingUrl_Json).json()["result"][0]["mediumImageUrl"]
         category.add_imageUrl(imageUrl)
-        f = open(f'./images/images_large/{category.categoryId}.txt', 'w')
+        f = open(f'./images/images_large/{id}.txt', 'w')
         f.write(category.imageUrl)
         f.close()
-        time.sleep(1)
+    print("finish getting images for small category")
+
+def get_images_mediumCategory():
+    for medium_category_json in api_category["result"]["medium"]:
+        mediumUrl = medium_category_json["categoryUrl"]
+        id = int((mediumUrl.split('/')[-2]).split('-')[0])
+        mediumId = int((mediumUrl.split('/')[-2]).split('-')[1])
+        mediumCategory = MediumCategory(id, mediumId)
+        text_file = f'{mediumId}.txt'
+        # delete this condition when updating
+        if os.path.exists(f'./images/images_medium/{text_file}'):
+            print(id, mediumId)
+        else:
+            print(mediumId)
+            time.sleep(1)
+            mediumRankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}-{mediumId}"
+            mediumImageUrl = requests.get(mediumRankingUrl_Json).json()["result"][0]["mediumImageUrl"]
+            mediumCategory.add_mediumImageUrl(mediumImageUrl)
+            f = open(f'./images/images_medium/{mediumId}.txt', 'w')
+            f.write(mediumCategory.mediumImageUrl)
+            f.close()
+    print("finish getting images for medium category")
+
+def get_images_smallCategory():
+    for small_category_json in api_category["result"]["small"]:
+        smallUrl = small_category_json["categoryUrl"]
+        id = int((smallUrl.split('/')[-2]).split('-')[0])
+        mediumId = int((smallUrl.split('/')[-2]).split('-')[1])
+        smallId = int((smallUrl.split('/')[-2]).split('-')[2])
+        smallCategory = SmallCategory(id, mediumId, smallId)
+        text_file = f'{smallId}.txt'
+        # delete this condition when updating
+        if os.path.exists(f'./images/images_small/{text_file}'):
+            print(id, mediumId, smallId)
+
+        else:
+            print(smallId)
+            time.sleep(1)
+            smallRankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}-{mediumId}-{smallId}"
+            smallImageUrl = requests.get(smallRankingUrl_Json).json()["result"][0]["mediumImageUrl"]
+            smallCategory.add_smallImageUrl(smallImageUrl)
+            f = open(f'./images/images_small/{smallId}.txt', 'w')
+            f.write(smallCategory.smallImageUrl)
+            f.close()
+    print("finish getting images for small category")
+
 
 if __name__ == "__main__":
-    get_images_largeCategory()
+    #get_images_largeCategory()
+    #get_images_mediumCategory()
+    get_images_smallCategory()
