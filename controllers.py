@@ -1,3 +1,4 @@
+#from tkinter import image_names
 from fastapi import FastAPI, Form, Depends, HTTPException
 from starlette.templating import Jinja2Templates
 from starlette.requests import Request
@@ -45,31 +46,15 @@ jinja_env = templates.env
 url_category = "https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&applicationId=1082013691690447331"
 api_category = requests.get(url_category).json()
 
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    categoriesName = []
-    categoriesId = []
-    
-    # Large Category
-    for index, category_name in enumerate(api_category["result"]["large"]):
-        '''result = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": api_id["result"]["large"][index]["categoryName"], }, )
-        categoryName = result.json()["translations"][0]["text"]
-        categories[categoryName] = category["categoryUrl"]'''
-        categoriesName.append(category_name["categoryName"])
-        
-        categoriesId.append(category_name["categoryId"])
-        data = zip(categoriesName, categoriesId)
-    return templates.TemplateResponse("index.html", {"request": request, "data": data} )
+class Category:
+        def __init__(self, categoryName, categoryId):
+            self.categoryName = categoryName
+            self.categoryId = categoryId
 
-@app.get("/{large_categoryId}", response_class=HTMLResponse)
-async def read_item(request: Request, large_categoryId: str):
-    #categoryName = 
-    
-    rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={large_categoryId}"
-    rankingUrl_Json = requests.get(rankingUrl_Json).json()
-    Json_result = rankingUrl_Json["result"]
+        def add_imageUrl(self, imageUrl):
+            self.imageUrl = imageUrl
 
-    class Recipe:
+class Recipe:
         def __init__(self, foodImageUrl, recipeId, recipeIndication, recipeTitle, recipeUrl, recipeDescription):
             self.foodImageUrl = foodImageUrl
             self.recipeId = recipeId
@@ -78,19 +63,49 @@ async def read_item(request: Request, large_categoryId: str):
             self.recipeUrl = recipeUrl
             self.recipeDescription = recipeDescription
 
-        recipe_list = []
-        
         def add_recipe(self):
             Recipe.recipe_list.append(self)
 
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+
+    # list of objects of category
+    categories = []
+
+    # Large Category
+    for index, category_json in enumerate(api_category["result"]["large"]):
+        category = Category(category_json["categoryName"], category_json["categoryId"])
+        categories.append(category)
+        result = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": api_id["result"]["large"][index]["categoryName"], }, )
+        categoryName = result.json()["translations"][0]["text"]
+        categories[categoryName] = category["categoryUrl"]
+
+    for index, category_object in enumerate(categories):
+        id = category_object.categoryId
+        rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}"
+        imageUrl = requests.get(rankingUrl_Json).json()["result"][0]["mediumImageUrl"]
+        category_object.add_imageUrl(imageUrl)
+        categories[index] = category_object
+
+    
+    return templates.TemplateResponse("index.html", {"request": request, "categories": categories} )
+
+@app.get("/{large_categoryId}", response_class=HTMLResponse)
+async def read_item(request: Request, large_categoryId: str):
+
+    rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={large_categoryId}"
+    rankingUrl_Json = requests.get(rankingUrl_Json).json()
+    '''Json_result = rankingUrl_Json["result"]
+
+    Recipe.recipe_list = []
+    
     for rec in Json_result:
         recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], rec["recipeUrl"], rec["recipeDescription"])
         recipe.add_recipe()
     
     rankingRecipe = Recipe.recipe_list
-    print(rankingRecipe)
 
-    return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe})
+    return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe})'''
 
 
 '''security = HTTPBasic()
