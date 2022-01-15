@@ -31,10 +31,10 @@
     
     <br>
     <ul id="nav">
-        {% for category in categories %}
+        {% for category in smallCategories %}
             <div class="each-recipe">
-                <a href="{{ category.categoryId }}"><img src="{{ category.imageUrl }}"></a>
-                <li><a href="{{ category.categoryId }}">{{ category.categoryName }}</a></li>
+                <a href="/small/?small_categoryId={{ category.categoryId }}"><img src="{{ category.imageUrl }}"></a>
+                <li><a href="/small/?small_categoryId={{ category.categoryId }}">{{ category.categoryName }}</a></li>
             </div>
         {% endfor %}
     </ul>

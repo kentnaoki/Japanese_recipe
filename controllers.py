@@ -1,11 +1,11 @@
 #from tkinter import image_names
-from fastapi import FastAPI, Form, Depends, HTTPException
+from fastapi import FastAPI, Form, Depends, HTTPException, status
 from starlette.templating import Jinja2Templates
 from starlette.requests import Request
 import db
 from models import User, Task
 from fastapi.responses import HTMLResponse
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCredentials
 
 from starlette.status import HTTP_401_UNAUTHORIZED
 
@@ -28,6 +28,7 @@ import json
 from typing import Optional
 import time
 
+from pydantic import BaseModel
 
 app = FastAPI(
     title = "Japanese food recipe",
@@ -44,6 +45,54 @@ pattern_mail = re.compile(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$')
 
 templates = Jinja2Templates(directory="templates")
 jinja_env = templates.env
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+fake_users_db = {
+    "johndoe": {
+        "username": "johndoe",
+        "full_name": "John Doe",
+        "email": "johndoe@example.com",
+        "hashed_password": "fakehashedsecret",
+        "disabled": False,
+    },
+    "alice": {
+        "username": "alice",
+        "full_name": "Alice Wonderson",
+        "email": "alice@example.com",
+        "hashed_password": "fakehashedsecret2",
+        "disabled": True,
+    },
+}
+
+class User(BaseModel):
+    username: str
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    disabled: Optional[bool] = None
+
+def fake_hash_password(password: str):
+    return "fakehashed" + password
+
+def UserInDB(User):
+    hash_passsword: str
+
+def get_user(db, username: str):
+    if username in db:
+        user_dict = db[username]
+        return UserInDB(**user_dict)
+
+def fake_decode_token(token):
+    user = get_user(fake_users_db, token)
+    return user
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    user = fake_decode_token(token)
+    return user
+
+@app.get("/users/me")
+async def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user
 
 url_category = "https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&applicationId=1082013691690447331"
 api_category = requests.get(url_category).json()
@@ -92,6 +141,11 @@ async def index(request: Request):
 @app.get("/large", response_class=HTMLResponse)
 async def read_large(request: Request, large_categoryId: int):
 
+    for large_category_json in api_category["result"]["large"]:
+        if int(large_category_json["categoryId"]) == large_categoryId:
+            categoryName = large_category_json["categoryName"]
+        else:
+            pass  
     rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={large_categoryId}"
     rankingUrl_Json = requests.get(rankingUrl_Json).json()
     Json_result = rankingUrl_Json["result"]
@@ -104,12 +158,13 @@ async def read_large(request: Request, large_categoryId: int):
     
     rankingRecipe = Recipe.recipe_list
 
-    return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe})
+    return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
+
 
 @app.get("/medium", response_class=HTMLResponse)
-async def read_medium(request: Request, medium_categoryId: Optional[int] = None):
-    
-    if not medium_categoryId:
+def read_medium(request: Request, medium_categoryId: Optional[int] = None):
+
+    if medium_categoryId == None:
         # list of objects of category
         mediumCategories = []
 
@@ -123,7 +178,29 @@ async def read_medium(request: Request, medium_categoryId: Optional[int] = None)
             mediumCategories.append(category)
             mediumCategories[index] = category
 
-        return ("medium.html", {"request": request, "mediumCategories": mediumCategories})
+        return templates.TemplateResponse("medium.html", {"request": request, "mediumCategories": mediumCategories})
+
+    else:
+        for medium_category_json in api_category["result"]["medium"]:
+            if medium_category_json["categoryId"] == medium_categoryId:
+                mediumUrl = medium_category_json["categoryUrl"]
+                id = int((mediumUrl.split('/')[-2]).split('-')[0])
+                categoryName = medium_category_json["categoryName"]
+            else:
+                pass
+        rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}-{medium_categoryId}"
+        rankingUrl_Json = requests.get(rankingUrl_Json).json()
+        Json_result = rankingUrl_Json["result"]
+
+        Recipe.recipe_list = []
+        
+        for rec in Json_result:
+            recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], rec["recipeUrl"], rec["recipeDescription"])
+            recipe.add_recipe()
+        
+        rankingRecipe = Recipe.recipe_list
+
+        return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
 
 @app.get("/small", response_class=HTMLResponse)
 async def read_small(request: Request, small_categoryId: Optional[int] = None):
@@ -142,7 +219,30 @@ async def read_small(request: Request, small_categoryId: Optional[int] = None):
             smallCategories.append(category)
             smallCategories[index] = category
 
-        return ("small.html", {"request": request, "smallCategories": smallCategories})
+        return templates.TemplateResponse("small.html", {"request": request, "smallCategories": smallCategories})
+    
+    else:
+        for small_category_json in api_category["result"]["small"]:
+            if small_category_json["categoryId"] == small_categoryId:
+                smallUrl = small_category_json["categoryUrl"]
+                id = int((smallUrl.split('/')[-2]).split('-')[0])
+                mediumId = int((smallUrl.split('/')[-2]).split('-')[1])
+                categoryName = small_category_json["categoryName"]
+            else:
+                pass
+        rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}-{mediumId}-{small_categoryId}"
+        rankingUrl_Json = requests.get(rankingUrl_Json).json()
+        Json_result = rankingUrl_Json["result"]
+
+        Recipe.recipe_list = []
+        
+        for rec in Json_result:
+            recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], rec["recipeUrl"], rec["recipeDescription"])
+            recipe.add_recipe()
+        
+        rankingRecipe = Recipe.recipe_list
+
+        return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
 
 '''security = HTTPBasic()
 

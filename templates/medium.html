@@ -33,8 +33,8 @@
     <ul id="nav">
         {% for category in mediumCategories %}
             <div class="each-recipe">
-                <a href="{{ category.categoryId }}"><img src="{{ category.imageUrl }}"></a>
-                <li><a href="{{ category.categoryId }}">{{ category.categoryName }}</a></li>
+                <a href="/medium?medium_categoryId={{ category.categoryId }}"><img src="{{ category.imageUrl }}"></a>
+                <li><a href="/medium?medium_categoryId={{ category.categoryId }}">{{ category.categoryName }}</a></li>
             </div>
         {% endfor %}
     </ul>
