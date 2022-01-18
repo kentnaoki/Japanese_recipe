@@ -138,3 +138,23 @@ header {
   color: black;
   font-weight: bold;
 }
+
+.materials {
+  width: 50px;
+  display: block;
+  margin: auto 0;
+}
+.materials_table {
+  display: block;
+  margin: auto 0;
+  color:blue;
+}
+tbody {
+  color: blue;
+}
+tr {
+  color: blue;
+}
+td {
+  color: blue;
+}

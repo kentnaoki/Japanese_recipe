@@ -188,12 +188,12 @@ class Category:
             self.imageUrl = imageUrl
 
 class Recipe:
-        def __init__(self, foodImageUrl, recipeId, recipeIndication, recipeTitle, recipeUrl, recipeDescription):
+        def __init__(self, foodImageUrl, recipeId, recipeIndication, recipeTitle, recipeUrlId, recipeDescription):
             self.foodImageUrl = foodImageUrl
             self.recipeId = recipeId
             self.recipeIndication = recipeIndication
             self.recipeTitle = recipeTitle
-            self.recipeUrl = recipeUrl
+            self.recipeUrlId = recipeUrlId
             self.recipeDescription = recipeDescription
 
         def add_recipe(self):
@@ -235,7 +235,7 @@ async def read_large(request: Request, large_categoryId: int):
     Recipe.recipe_list = []
     
     for rec in Json_result:
-        recipeUrlId = rec["recipeUrl"].split('/')[-2]
+        recipeUrlId = int(rec["recipeUrl"].split('/')[-2])
         recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], recipeUrlId, rec["recipeDescription"])
         recipe.add_recipe()
     
@@ -278,7 +278,7 @@ def read_medium(request: Request, medium_categoryId: Optional[int] = None):
         Recipe.recipe_list = []
         
         for rec in Json_result:
-            recipeUrlId = rec["recipeUrl"].split('/')[-2]
+            recipeUrlId = int(rec["recipeUrl"].split('/')[-2])
             recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], recipeUrlId, rec["recipeDescription"])
             recipe.add_recipe()
         
@@ -321,7 +321,7 @@ async def read_small(request: Request, small_categoryId: Optional[int] = None):
         Recipe.recipe_list = []
         
         for rec in Json_result:
-            recipeUrlId = rec["recipeUrl"].split('/')[-2]
+            recipeUrlId = int(rec["recipeUrl"].split('/')[-2])
             recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], recipeUrlId, rec["recipeDescription"])
             recipe.add_recipe()
         
@@ -330,8 +330,8 @@ async def read_small(request: Request, small_categoryId: Optional[int] = None):
         return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
 
 @app.get("/recipe", response_class=HTMLResponse)
-async def recipe(request: Request, recipeId: int):
-    url = f'https://recipe.rakuten.co.jp/recipe/{recipeId}/'
+async def recipe(request: Request, recipeUrlId: int):
+    url = f'https://recipe.rakuten.co.jp/recipe/{recipeUrlId}/'
     res = requests.get(url)
 
     soup = BeautifulSoup(res.text, "html.parser", from_encoding='utf-8')
