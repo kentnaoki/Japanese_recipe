@@ -32,6 +32,8 @@ from pydantic import BaseModel
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 
+from bs4 import BeautifulSoup
+
 app = FastAPI(
     title = "Japanese food recipe",
     description = "Authentic Japanese food recipe for people who live outside Japan",
@@ -164,6 +166,12 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.get("/register", response_class=HTMLResponse)
+async def register(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request,} )
+
+# @app.post("/register", )
+
 @app.get("/users/me")
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
@@ -227,7 +235,8 @@ async def read_large(request: Request, large_categoryId: int):
     Recipe.recipe_list = []
     
     for rec in Json_result:
-        recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], rec["recipeUrl"], rec["recipeDescription"])
+        recipeUrlId = rec["recipeUrl"].split('/')[-2]
+        recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], recipeUrlId, rec["recipeDescription"])
         recipe.add_recipe()
     
     rankingRecipe = Recipe.recipe_list
@@ -269,7 +278,8 @@ def read_medium(request: Request, medium_categoryId: Optional[int] = None):
         Recipe.recipe_list = []
         
         for rec in Json_result:
-            recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], rec["recipeUrl"], rec["recipeDescription"])
+            recipeUrlId = rec["recipeUrl"].split('/')[-2]
+            recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], recipeUrlId, rec["recipeDescription"])
             recipe.add_recipe()
         
         rankingRecipe = Recipe.recipe_list
@@ -311,13 +321,37 @@ async def read_small(request: Request, small_categoryId: Optional[int] = None):
         Recipe.recipe_list = []
         
         for rec in Json_result:
-            recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], rec["recipeUrl"], rec["recipeDescription"])
+            recipeUrlId = rec["recipeUrl"].split('/')[-2]
+            recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], recipeUrlId, rec["recipeDescription"])
             recipe.add_recipe()
         
         rankingRecipe = Recipe.recipe_list
 
         return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
 
+@app.get("/recipe", response_class=HTMLResponse)
+async def recipe(request: Request, recipeId: int):
+    url = f'https://recipe.rakuten.co.jp/recipe/{recipeId}/'
+    res = requests.get(url)
+
+    soup = BeautifulSoup(res.text, "html.parser", from_encoding='utf-8')
+
+    # make dictionary of materials
+    items = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_material.mb32 > ul > li > .recipe_material__item_name")
+    servings = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_material.mb32 > ul > li > .recipe_material__item_serving")
+    materials = {}
+
+    for item, serving in zip(items, servings):
+        materials[item.text.replace('\n', '')] = serving.text.replace('\n', '')
+
+    description = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_howto.section_border_top.section_padding_top.mt32.mb21 > ol > li > span.recipe_howto__text")
+    descriptions = {}
+
+    for index, item in enumerate(description):
+        descriptions[index+1] = item.text.replace('\n', '')
+
+    return templates.TemplateResponse("recipe.html", {"request": request, "materials": materials, "descriptions": descriptions})
+    
 '''security = HTTPBasic()
 
 def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
