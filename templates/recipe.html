@@ -14,6 +14,9 @@
 <div class="categories">
     <h2>{{ recipeName }}</h2>
     <br>
+    <div class="image">
+        <img src="{{ imageUrl }}">
+    </div>
     <div class="materials">
         <table class="materials_table">
             <tbody>
@@ -22,13 +25,22 @@
                     <th>Servings</th>
                 </tr>
                 {% for item, serving in materials.items() %}
-                    <tr>
-                        <td>{{ item }}</td>
-                        <td>{{ serving }}</td>
-                    </tr>
+                <tr>
+                    <td>{{ item }}</td>
+                    <td>{{ serving }}</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+    <br>
+    <hr>
+    <div class="recipeDescription">
+        {% for index, description in descriptions.items() %}
+        <p class="index">{{ index }}. </p>
+        <p class="description">{{ description }}</p>
+        <hr>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

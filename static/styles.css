@@ -137,24 +137,37 @@ header {
 .recipe-title a {
   color: black;
   font-weight: bold;
+  font-size: large;
 }
 
-.materials {
-  width: 50px;
-  display: block;
-  margin: auto 0;
+.recipe-description {
+  display: inline-block;
+  vertical-align: middle;
+  margin: auto auto;
+  height: 120px;
 }
+
 .materials_table {
-  display: block;
-  margin: auto 0;
-  color:blue;
+  margin: auto;
 }
-tbody {
-  color: blue;
+
+.materials_table th {
+  font-weight: bold;
+  font-size: 20px;
 }
-tr {
-  color: blue;
+
+
+.description {
+  display: inline;
 }
-td {
-  color: blue;
+
+.index {
+  display: inline-block;
+  margin-bottom: 0;
+}
+
+
+.image {
+  width: 100px;
+  height: 100px;
 }

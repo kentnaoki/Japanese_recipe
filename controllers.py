@@ -349,8 +349,12 @@ async def recipe(request: Request, recipeUrlId: int):
 
     for index, item in enumerate(description):
         descriptions[index+1] = item.text.replace('\n', '')
+    
+    image = soup.select("#recipeBasic > div.recipe_info_img > img[src]")
+    for i in image:
+        imageUrl = i.get("src")
 
-    return templates.TemplateResponse("recipe.html", {"request": request, "materials": materials, "descriptions": descriptions})
+    return templates.TemplateResponse("recipe.html", {"request": request, "materials": materials, "descriptions": descriptions, "imageUrl": imageUrl},)
     
 '''security = HTTPBasic()
 
