@@ -34,6 +34,8 @@ from jose import JWTError, jwt
 
 from bs4 import BeautifulSoup
 
+from fastapi import File, UploadFile
+
 app = FastAPI(
     title = "Japanese food recipe",
     description = "Authentic Japanese food recipe for people who live outside Japan",
@@ -50,6 +52,222 @@ pattern_mail = re.compile(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$')
 templates = Jinja2Templates(directory="templates")
 jinja_env = templates.env
 
+
+url_category = "https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&applicationId=1082013691690447331"
+api_category = requests.get(url_category).json()
+
+class Category:
+        def __init__(self, categoryName, categoryId):
+            self.categoryName = categoryName
+            self.categoryId = categoryId
+
+        def add_imageUrl(self, imageUrl):
+            self.imageUrl = imageUrl
+
+class Recipe:
+        def __init__(self, foodImageUrl, recipeId, recipeIndication, recipeTitle, recipeUrlId, recipeDescription):
+            self.foodImageUrl = foodImageUrl
+            self.recipeId = recipeId
+            self.recipeIndication = recipeIndication
+            self.recipeTitle = recipeTitle
+            self.recipeUrlId = recipeUrlId
+            self.recipeDescription = recipeDescription
+
+        def add_recipe(self):
+            Recipe.recipe_list.append(self)
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+
+    # list of objects of category
+    categories = []
+
+    # Large Category
+    for index, category_json in enumerate(api_category["result"]["large"]):
+        translate_api = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": category_json["categoryName"], }, )
+        categoryName = translate_api.json()["translations"][0]["text"]
+        category = Category(categoryName, int(category_json["categoryId"]))
+
+        data = f'./images/images_large/{category.categoryId}.jpg'
+        '''f = open(f'./images/images_large/{category.categoryId}.txt', 'r')
+        data = f.read()
+        f.close()'''
+        category.add_imageUrl(data)
+        categories.append(category)
+        categories[index] = category
+        
+    
+    return templates.TemplateResponse("index.html", {"request": request, "categories": categories} )
+
+@app.get("/large", response_class=HTMLResponse)
+async def read_large(request: Request, large_categoryId: int):
+
+    for large_category_json in api_category["result"]["large"]:
+        if int(large_category_json["categoryId"]) == large_categoryId:
+            translate_api = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": large_category_json["categoryName"], }, )
+            categoryName = translate_api.json()["translations"][0]["text"]
+        else:
+            pass  
+    rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={large_categoryId}"
+    rankingUrl_Json = requests.get(rankingUrl_Json).json()
+    Json_result = rankingUrl_Json["result"]
+
+    Recipe.recipe_list = []
+    
+    for rec in Json_result:
+        recipeUrlId = int(rec["recipeUrl"].split('/')[-2])
+        translate_api_title = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": rec["recipeTitle"], }, )
+        recipeTitle = translate_api_title.json()["translations"][0]["text"]
+        translate_api_description = translate_api_title = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": rec["recipeDescription"], }, )
+        recipeDescription = translate_api_description.json()["translations"][0]["text"]
+        recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], recipeTitle, recipeUrlId, recipeDescription)
+        recipe.add_recipe()
+    
+    rankingRecipe = Recipe.recipe_list
+
+    return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
+
+
+@app.get("/medium", response_class=HTMLResponse)
+def read_medium(request: Request, medium_categoryId: Optional[int] = None):
+
+    if medium_categoryId == None:
+        # list of objects of category
+        mediumCategories = []
+
+        # Large Category
+        for index, category_json in enumerate(api_category["result"]["medium"]):
+            translate_api = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": category_json["categoryName"], }, )
+            categoryName = translate_api.json()["translations"][0]["text"]
+            category = Category(categoryName, int(category_json["categoryId"]))
+            f = open(f'./images/images_medium/{category.categoryId}.txt', 'r')
+            data = f.read()
+            f.close()
+            category.add_imageUrl(data)
+            mediumCategories.append(category)
+            mediumCategories[index] = category
+
+        return templates.TemplateResponse("medium.html", {"request": request, "mediumCategories": mediumCategories})
+
+    else:
+        for medium_category_json in api_category["result"]["medium"]:
+            if medium_category_json["categoryId"] == medium_categoryId:
+                mediumUrl = medium_category_json["categoryUrl"]
+                id = int((mediumUrl.split('/')[-2]).split('-')[0])
+                translate_api_categoryName = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": medium_category_json["categoryName"], }, )
+                categoryName = translate_api_categoryName.json()["translations"][0]["text"]
+            else:
+                pass
+        rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}-{medium_categoryId}"
+        rankingUrl_Json = requests.get(rankingUrl_Json).json()
+        Json_result = rankingUrl_Json["result"]
+
+        Recipe.recipe_list = []
+        
+        for rec in Json_result:
+            recipeUrlId = int(rec["recipeUrl"].split('/')[-2])
+            translate_api_title = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": rec["recipeTitle"], }, )
+            recipeTitle = translate_api_title.json()["translations"][0]["text"]
+            translate_api_description = translate_api_title = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": rec["recipeDescription"], }, )
+            recipeDescription = translate_api_description.json()["translations"][0]["text"]
+            recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], recipeTitle, recipeUrlId, recipeDescription)
+            recipe.add_recipe()
+        
+        rankingRecipe = Recipe.recipe_list
+
+        return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
+
+@app.get("/small", response_class=HTMLResponse)
+async def read_small(request: Request, small_categoryId: Optional[int] = None):
+
+    if not small_categoryId:
+        # list of objects of category
+        smallCategories = []
+
+        # Large Category
+        for index, category_json in enumerate(api_category["result"]["small"]):
+            translate_api = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": category_json["categoryName"], }, )
+            categoryName = translate_api.json()["translations"][0]["text"]
+            category = Category(categoryName, category_json["categoryId"])
+            f = open(f'./images/images_small/{category.categoryId}.txt', 'r')
+            data = f.read()
+            f.close()
+            category.add_imageUrl(data)
+            smallCategories.append(category)
+            smallCategories[index] = category
+
+        return templates.TemplateResponse("small.html", {"request": request, "smallCategories": smallCategories})
+    
+    else:
+        for small_category_json in api_category["result"]["small"]:
+            if small_category_json["categoryId"] == small_categoryId:
+                smallUrl = small_category_json["categoryUrl"]
+                id = int((smallUrl.split('/')[-2]).split('-')[0])
+                mediumId = int((smallUrl.split('/')[-2]).split('-')[1])
+                translate_api_categoryName = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": small_category_json["categoryName"], }, )
+                categoryName = translate_api_categoryName.json()["translations"][0]["text"]
+            else:
+                pass
+
+        rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}-{mediumId}-{small_categoryId}"
+        rankingUrl_Json = requests.get(rankingUrl_Json).json()
+        Json_result = rankingUrl_Json["result"]
+
+        Recipe.recipe_list = []
+        
+        for rec in Json_result:
+            recipeUrlId = int(rec["recipeUrl"].split('/')[-2])
+            translate_api_title = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": rec["recipeTitle"], }, )
+            recipeTitle = translate_api_title.json()["translations"][0]["text"]
+            translate_api_description = translate_api_title = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": rec["recipeDescription"], }, )
+            recipeDescription = translate_api_description.json()["translations"][0]["text"]
+            recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], recipeTitle, recipeUrlId, recipeDescription)
+            recipe.add_recipe()
+        
+        rankingRecipe = Recipe.recipe_list
+
+        return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
+
+@app.get("/recipe", response_class=HTMLResponse)
+async def recipe(request: Request, recipeUrlId: int):
+    url = f'https://recipe.rakuten.co.jp/recipe/{recipeUrlId}/'
+    res = requests.get(url)
+
+    soup = BeautifulSoup(res.text, "html.parser", from_encoding='utf-8')
+
+    # make dictionary of materials
+    items = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_material.mb32 > ul > li > .recipe_material__item_name")
+    servings = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_material.mb32 > ul > li > .recipe_material__item_serving")
+    materials = {}
+
+    for item, serving in zip(items, servings):
+        item_api = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": item.text.replace('\n', ''), }, )
+        item_translated = item_api.json()["translations"][0]["text"]
+        serving_api = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": serving.text.replace('\n', ''), }, )
+        serving_translated = serving_api.json()["translations"][0]["text"]
+        materials[item_translated] = serving_translated
+
+    description = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_howto.section_border_top.section_padding_top.mt32.mb21 > ol > li > span.recipe_howto__text")
+    descriptions = {}
+
+    for index, item_description in enumerate(description):
+        description_api = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": item_description.text.replace('\n', ''), }, )
+        description_translated = description_api.json()["translations"][0]["text"]
+        descriptions[index+1] = description_translated
+    
+    image = soup.select("#recipeBasic > div.recipe_info_img > img[src]")
+    for i in image:
+        imageUrl = i.get("src")
+
+    recipeName_soup = soup.select("#recipeDetailTitle > h1")
+    recipeName = recipeName_soup[0].text.split(' ')[0]
+    recipeName_api = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": recipeName, }, )
+    recipeName = recipeName_api.json()["translations"][0]["text"]
+
+    return templates.TemplateResponse("recipe.html", {"request": request, "materials": materials, "descriptions": descriptions, "imageUrl": imageUrl, "recipeName": recipeName},)
+    
+
+'''
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 SECRET_KEY = "8c0bbebdbe4a1f7b81efe51986fe98e05b90968738e6c43e4d9da3874c547eec"
@@ -166,196 +384,17 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.get("/register", response_class=HTMLResponse)
-async def register(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request,} )
-
-# @app.post("/register", )
 
 @app.get("/users/me")
 async def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    return current_user'''
 
-url_category = "https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&applicationId=1082013691690447331"
-api_category = requests.get(url_category).json()
-
-class Category:
-        def __init__(self, categoryName, categoryId):
-            self.categoryName = categoryName
-            self.categoryId = categoryId
-
-        def add_imageUrl(self, imageUrl):
-            self.imageUrl = imageUrl
-
-class Recipe:
-        def __init__(self, foodImageUrl, recipeId, recipeIndication, recipeTitle, recipeUrlId, recipeDescription):
-            self.foodImageUrl = foodImageUrl
-            self.recipeId = recipeId
-            self.recipeIndication = recipeIndication
-            self.recipeTitle = recipeTitle
-            self.recipeUrlId = recipeUrlId
-            self.recipeDescription = recipeDescription
-
-        def add_recipe(self):
-            Recipe.recipe_list.append(self)
-
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-
-    # list of objects of category
-    categories = []
-
-    # Large Category
-    for index, category_json in enumerate(api_category["result"]["large"]):
-        category = Category(category_json["categoryName"], int(category_json["categoryId"]))
-        f = open(f'./images/images_large/{category.categoryId}.txt', 'r')
-        data = f.read()
-        f.close()
-        category.add_imageUrl(data)
-        categories.append(category)
-        categories[index] = category
-        '''result = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "25a0ba9f-e4c2-079a-ca42-6d7f1fce49e5:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": api_id["result"]["large"][index]["categoryName"], }, )
-        categoryName = result.json()["translations"][0]["text"]
-        categories[categoryName] = category["categoryUrl"]'''
-    
-    return templates.TemplateResponse("index.html", {"request": request, "categories": categories} )
-
-@app.get("/large", response_class=HTMLResponse)
-async def read_large(request: Request, large_categoryId: int):
-
-    for large_category_json in api_category["result"]["large"]:
-        if int(large_category_json["categoryId"]) == large_categoryId:
-            categoryName = large_category_json["categoryName"]
-        else:
-            pass  
-    rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={large_categoryId}"
-    rankingUrl_Json = requests.get(rankingUrl_Json).json()
-    Json_result = rankingUrl_Json["result"]
-
-    Recipe.recipe_list = []
-    
-    for rec in Json_result:
-        recipeUrlId = int(rec["recipeUrl"].split('/')[-2])
-        recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], recipeUrlId, rec["recipeDescription"])
-        recipe.add_recipe()
-    
-    rankingRecipe = Recipe.recipe_list
-
-    return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
+@app.get("/register-login", response_class=HTMLResponse)
+async def register(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request,} )
 
 
-@app.get("/medium", response_class=HTMLResponse)
-def read_medium(request: Request, medium_categoryId: Optional[int] = None):
 
-    if medium_categoryId == None:
-        # list of objects of category
-        mediumCategories = []
-
-        # Large Category
-        for index, category_json in enumerate(api_category["result"]["medium"]):
-            category = Category(category_json["categoryName"], int(category_json["categoryId"]))
-            f = open(f'./images/images_medium/{category.categoryId}.txt', 'r')
-            data = f.read()
-            f.close()
-            category.add_imageUrl(data)
-            mediumCategories.append(category)
-            mediumCategories[index] = category
-
-        return templates.TemplateResponse("medium.html", {"request": request, "mediumCategories": mediumCategories})
-
-    else:
-        for medium_category_json in api_category["result"]["medium"]:
-            if medium_category_json["categoryId"] == medium_categoryId:
-                mediumUrl = medium_category_json["categoryUrl"]
-                id = int((mediumUrl.split('/')[-2]).split('-')[0])
-                categoryName = medium_category_json["categoryName"]
-            else:
-                pass
-        rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}-{medium_categoryId}"
-        rankingUrl_Json = requests.get(rankingUrl_Json).json()
-        Json_result = rankingUrl_Json["result"]
-
-        Recipe.recipe_list = []
-        
-        for rec in Json_result:
-            recipeUrlId = int(rec["recipeUrl"].split('/')[-2])
-            recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], recipeUrlId, rec["recipeDescription"])
-            recipe.add_recipe()
-        
-        rankingRecipe = Recipe.recipe_list
-
-        return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
-
-@app.get("/small", response_class=HTMLResponse)
-async def read_small(request: Request, small_categoryId: Optional[int] = None):
-
-    if not small_categoryId:
-        # list of objects of category
-        smallCategories = []
-
-        # Large Category
-        for index, category_json in enumerate(api_category["result"]["small"]):
-            category = Category(category_json["categoryName"], category_json["categoryId"])
-            f = open(f'./images/images_small/{category.categoryId}.txt', 'r')
-            data = f.read()
-            f.close()
-            category.add_imageUrl(data)
-            smallCategories.append(category)
-            smallCategories[index] = category
-
-        return templates.TemplateResponse("small.html", {"request": request, "smallCategories": smallCategories})
-    
-    else:
-        for small_category_json in api_category["result"]["small"]:
-            if small_category_json["categoryId"] == small_categoryId:
-                smallUrl = small_category_json["categoryUrl"]
-                id = int((smallUrl.split('/')[-2]).split('-')[0])
-                mediumId = int((smallUrl.split('/')[-2]).split('-')[1])
-                categoryName = small_category_json["categoryName"]
-            else:
-                pass
-        rankingUrl_Json = f"https://app.rakuten.co.jp/services/api/Recipe/CategoryRanking/20170426?applicationId=1082013691690447331&categoryId={id}-{mediumId}-{small_categoryId}"
-        rankingUrl_Json = requests.get(rankingUrl_Json).json()
-        Json_result = rankingUrl_Json["result"]
-
-        Recipe.recipe_list = []
-        
-        for rec in Json_result:
-            recipeUrlId = int(rec["recipeUrl"].split('/')[-2])
-            recipe = Recipe(rec["mediumImageUrl"], rec["recipeId"], rec["recipeIndication"], rec["recipeTitle"], recipeUrlId, rec["recipeDescription"])
-            recipe.add_recipe()
-        
-        rankingRecipe = Recipe.recipe_list
-
-        return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
-
-@app.get("/recipe", response_class=HTMLResponse)
-async def recipe(request: Request, recipeUrlId: int):
-    url = f'https://recipe.rakuten.co.jp/recipe/{recipeUrlId}/'
-    res = requests.get(url)
-
-    soup = BeautifulSoup(res.text, "html.parser", from_encoding='utf-8')
-
-    # make dictionary of materials
-    items = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_material.mb32 > ul > li > .recipe_material__item_name")
-    servings = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_material.mb32 > ul > li > .recipe_material__item_serving")
-    materials = {}
-
-    for item, serving in zip(items, servings):
-        materials[item.text.replace('\n', '')] = serving.text.replace('\n', '')
-
-    description = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_howto.section_border_top.section_padding_top.mt32.mb21 > ol > li > span.recipe_howto__text")
-    descriptions = {}
-
-    for index, item in enumerate(description):
-        descriptions[index+1] = item.text.replace('\n', '')
-    
-    image = soup.select("#recipeBasic > div.recipe_info_img > img[src]")
-    for i in image:
-        imageUrl = i.get("src")
-
-    return templates.TemplateResponse("recipe.html", {"request": request, "materials": materials, "descriptions": descriptions, "imageUrl": imageUrl},)
-    
 '''security = HTTPBasic()
 
 def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security)):

@@ -1,18 +1,10 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="row">
-    <div class="col-md-10">
-        <h1>Welcome to the Japanese Food Recipe website!</h1>
-    </div>
-    <div class="login">
-        <a href="#" class="btn btn-dark">Login</a>
-    </div>
-</div>
-<hr>
-<br>
 
 <div class="categories">
-    <h2>{{ recipeName }}</h2>
+    <div class="recipeName">
+        <h2>{{ recipeName }}</h2>
+    </div>
     <br>
     <div class="image">
         <img src="{{ imageUrl }}">

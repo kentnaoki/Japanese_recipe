@@ -25,6 +25,7 @@ header {
 }
 
 .row {
+  display: block;
   text-align: center;
   padding-top: 1.5em;
   padding-bottom: 0.5em;
@@ -32,6 +33,7 @@ header {
 
 .col-md-10 {
   margin: 0 auto;
+  display: inline-block;
 }
 
 .col-md-10 h1 {
@@ -39,13 +41,18 @@ header {
   font-size: 30px;
 }
 
-.login {
+.login-button {
   margin: 0 auto;
+  display: inline-block;
 }
 
 .categories {
   width: 90%;
   margin: auto;
+}
+
+.categoryName h2 {
+  margin: 0 0 1.5em 5em;
 }
 
 .head-title {
@@ -125,9 +132,10 @@ header {
 }
 
 .recipe-text {
+  margin-top: 1em;
   display: inline-block;
   width: 70%;
-  margin-left: 20px;
+  margin-left: 30px;
 }
 
 .recipe-title {
@@ -141,14 +149,30 @@ header {
 }
 
 .recipe-description {
+  text-align: center;
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+.recipe-description p {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.recipeName {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.materials {
   display: inline-block;
-  vertical-align: middle;
-  margin: auto auto;
-  height: 120px;
+  vertical-align: top;
+  width: 60%;
 }
 
 .materials_table {
   margin: auto;
+  table-layout: auto;
 }
 
 .materials_table th {
@@ -156,6 +180,9 @@ header {
   font-size: 20px;
 }
 
+.materials_table td {
+  padding: 3px 30px 3px 0px;
+}
 
 .description {
   display: inline;
@@ -166,8 +193,18 @@ header {
   margin-bottom: 0;
 }
 
-
 .image {
-  width: 100px;
-  height: 100px;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.image img {
+  height: 400px;
+}
+
+.register-login {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin:40px 0px;
 }
