@@ -1,6 +1,6 @@
 # create_table.py
 from models import *
-import db
+import database
 import os
 
 

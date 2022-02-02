@@ -1,8 +1,25 @@
-from cgitb import small
 import time
 import requests
 import json
 import os
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy.orm import Session
+
+import crud, models, schemas
+from database import SessionLocal, engine
+
+import cv2
+
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 class Category:
     def __init__(self, categoryId):
@@ -33,7 +50,8 @@ img_largeCategory = []
 url_category = "https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&applicationId=1082013691690447331"
 api_category = requests.get(url_category).json()
 
-def get_images_largeCategory():
+@app.post("/images/large/", response_model=schemas.Image)
+def get_images_largeCategory(db: Session = Depends(get_db)):
     for category_json in api_category["result"]["large"]:
         largeUrl = category_json["categoryUrl"]
         id = int((largeUrl.split('/')[-2]).split('-')[0])
@@ -45,12 +63,19 @@ def get_images_largeCategory():
 
         response = requests.get(imageUrl)
         image = response.content
-        with open(f'./images/images_large/{id}.jpg', 'wb') as img:
+        with open(f'./images/images_large/{id}.txt', 'w') as img:
             img.write(image)
+
+        db = SessionLocal()
+
+        crud.create_image_large(db=db, image=img, scale="large", image_number=id)
+        '''with open(f'./images/images_large/{id}.jpg', 'wb') as img:
+            img.write(image)'''
 
         '''f = open(f'./images/images_large/{id}.txt', 'w')
         f.write(category.imageUrl)
         f.close()'''
+
     print("finish getting images for small category")
 
 def get_images_mediumCategory():
@@ -108,6 +133,6 @@ def get_images_smallCategory():
 
 
 if __name__ == "__main__":
-    #get_images_largeCategory()
+    get_images_largeCategory()
     #get_images_mediumCategory()
-    get_images_smallCategory()
+    #get_images_smallCategory()

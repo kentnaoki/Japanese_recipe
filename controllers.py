@@ -2,15 +2,14 @@
 from fastapi import FastAPI, Form, Depends, HTTPException, status
 from starlette.templating import Jinja2Templates
 from starlette.requests import Request
-import db
-from models import User, Task
+
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCredentials
 
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-import db
-from models import User, Task
+import database
+from models import User, Item
 
 import hashlib
 
@@ -36,6 +35,16 @@ from bs4 import BeautifulSoup
 
 from fastapi import File, UploadFile
 
+from typing import List
+
+from urllib import response
+from sqlalchemy.orm import Session
+
+import crud
+import models
+import schemas
+from database import SessionLocal, engine
+
 app = FastAPI(
     title = "Japanese food recipe",
     description = "Authentic Japanese food recipe for people who live outside Japan",
@@ -55,6 +64,15 @@ jinja_env = templates.env
 
 url_category = "https://app.rakuten.co.jp/services/api/Recipe/CategoryList/20170426?format=json&applicationId=1082013691690447331"
 api_category = requests.get(url_category).json()
+
+models.Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 class Category:
         def __init__(self, categoryName, categoryId):
@@ -77,7 +95,7 @@ class Recipe:
             Recipe.recipe_list.append(self)
 
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
+async def index(request: Request, db: Session = Depends(get_db)):
 
     # list of objects of category
     categories = []
@@ -88,11 +106,12 @@ async def index(request: Request):
         categoryName = translate_api.json()["translations"][0]["text"]
         category = Category(categoryName, int(category_json["categoryId"]))
 
-        data = f'./images/images_large/{category.categoryId}.jpg'
+        db_image = crud.get_image_large(db=db, scale="large", image_number=category.categoryId)
+        #data = f'./images/images_large/{category.categoryId}.jpg'
         '''f = open(f'./images/images_large/{category.categoryId}.txt', 'r')
         data = f.read()
         f.close()'''
-        category.add_imageUrl(data)
+        category.add_imageUrl(db_image)
         categories.append(category)
         categories[index] = category
         
@@ -266,6 +285,40 @@ async def recipe(request: Request, recipeUrlId: int):
 
     return templates.TemplateResponse("recipe.html", {"request": request, "materials": materials, "descriptions": descriptions, "imageUrl": imageUrl, "recipeName": recipeName},)
     
+@app.post("/images/large/", response_model=schemas.Image)
+def create_image_large(image: schemas.Image, db: Session = Depends(get_db)):
+    
+    return crud.create_image_large(db, image=image)
+
+@app.post("/users/", response_model=schemas.User)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)
+
+@app.get("/users/", response_model=List[schemas.User])
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return users
+
+@app.post("/users/{user_id}", response_model=schemas.User)
+def read_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+@app.post("/users/{user_id}/items/", response_model=schemas.Item)
+def create_item_for_user(
+    user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
+):
+    return crud.create_user_item(db=db, item=item, user_id=user_id)
+
+@app.get("/items/", response_model=List[schemas.Item])
+def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_items(db, skip=skip, limit=limit)
+    return items
 
 '''
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
