@@ -3,28 +3,31 @@ from sqlalchemy.orm import relationship
 
 from database import Base
 
-class User(Base):
-    __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    is_active = Column(Boolean, default=True)
-    
-    items = relationship("Item", back_populates="owner") 
+class CategoryTable(Base):
+    __tablename__ = "categories"
+    id = Column(Integer, index=True)
+    scale = Column(String, index=True, primary_key=True)
+    categoryName = Column(String, index=True)
+    categoryId = Column(Integer, index=True, primary_key=True)
+    categoryImage_pass = Column(String, index=True)
 
-class Item(Base):
-    __tablename__ = "items"
+class RankingTable(Base):
+    __tablename__ = "rankings"
+    id = Column(Integer, index=True)
+    recipeId = Column(Integer, index=True, primary_key=True)
+    categoryId = Column(Integer, index=True, primary_key=True)
+    scale = Column(String, index=True, primary_key=True)
+    categoryName = Column(String, index=True)
+    recipeTitle = Column(String, index=True)
+    recipeDescription = Column(String, index=True)
+    recipeImage_pass = Column(String, index=True)
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    description = Column(String, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"))
-
-    owner = relationship("User", back_populates="items")
-
-class Image(Base):
-    __tablename__ = "images"
-
-    image = Column(String, index=True)
-    scale = Column(String, index=True)
-    image_number = Column(Integer, primary_key=True, index=True)
+class RecipeTable(Base):
+    __tablename__ = "recipes"
+    id = Column(Integer, index=True)
+    recipeId = Column(Integer, index=True, primary_key=True)
+    scale = Column(String, index=True, primary_key=True)
+    recipeTitle = Column(String, index=True)
+    recipeMaterials = Column(String, index=True)
+    recipeInstructions = Column(String, index=True)
+    recipeImage_pass = Column(String, index=True)

@@ -1,36 +1,28 @@
 from typing import List, Optional
 from pydantic import BaseModel
 
-class ItemBase(BaseModel):
-    title: str
-    description: Optional[str] = None
-
-class ItemCreate(ItemBase):
-    pass
-
-class Item(ItemBase):
+class Category(BaseModel):
     id: int
-    owner_id: int
-
-    class Config:
-        orm_mode = True
-
-class UserBase(BaseModel):
-    email: str
-
-class UserCreate(UserBase):
-    password: str
-
-class User(UserBase):
-    id: int
-    is_active: bool
-    items: List[Item] = []
-
-    class Config:
-        orm_mode = True
-
-
-class Image(BaseModel):
     scale: str
-    image_number: int
-    image: str
+    categoryName: str
+    categoryId: int
+    categoryImage_pass: str
+
+class Ranking(BaseModel):
+    id: int
+    recipeId: int
+    categoryId: int
+    scale: str
+    categoryName: str
+    recipeTitle: str
+    recipeDescription: str
+    recipeImage_pass: str
+
+class Recipe(BaseModel):
+    id: int
+    recipeId: int
+    scale: str
+    recipeTitle: str
+    recipeMaterials: str
+    recipeInstructions: str
+    recipeImage_pass: str
