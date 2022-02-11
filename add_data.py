@@ -232,7 +232,7 @@ def update_ranking_db(db: Session = Depends(get_db)):
     print("finish")
 
 def create_recipe_db(db: Session = Depends(get_db)):
-    scales = ["large", "medium", "small"]
+    scales = ["large"]
     for scale in scales:
         path = f'./images/recipe/{scale}/*/*'
         files = glob.glob(path)
@@ -261,6 +261,10 @@ def create_recipe_db(db: Session = Depends(get_db)):
 
                 for item, serving in zip(items, servings):
                     material = item.text.replace('\n', '')
+                    items = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": material, }, )
+                    items = items.json()["translations"][0]["text"]
+                    servings = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": serving, }, )
+                    servings = servings.json()["translations"][0]["text"]
                     serving = serving.text.replace('\n', '')
 
                     recipeMaterials[material] = serving
@@ -301,4 +305,4 @@ def update_recipe_db(db: Session = Depends(get_db)):
             else:
                 pass
 
-update_ranking_db()
+create_recipe_db()

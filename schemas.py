@@ -22,14 +22,8 @@ class Recipe(BaseModel):
     id: int
     recipeId: int
     scale: str
-<<<<<<< HEAD
     categoryId: int
     recipeTitle: str
     recipeMaterials: dict
     recipeInstructions: dict
-=======
-    recipeTitle: str
-    recipeMaterials: str
-    recipeInstructions: str
->>>>>>> 4344d5026f46d38d4b1fa1a30d16a639153028cf
     recipeImage_pass: str

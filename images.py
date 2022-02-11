@@ -235,7 +235,7 @@ def get_images_ranking():
     print("finish")
 
 def get_images_recipe():
-    scales = ["small"]
+    scales = ["large", "medium", "small"]
     
     for scale in scales:
         path_recipe = f'./images/recipe/{scale}'
@@ -316,5 +316,5 @@ if __name__ == "__main__":
     #get_images_mediumCategory()
     #get_images_smallCategory()
     
-    get_images_ranking()
-    #get_images_recipe()
+    #get_images_ranking()
+    get_images_recipe()

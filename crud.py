@@ -64,18 +64,12 @@ def get_table_ranking(db: Session, categoryId: int, scale: str):
     db_ranking_data = db.query(models.RankingTable).filter(models.RankingTable.categoryId == categoryId, models.RankingTable.scale == scale).all()
     return db_ranking_data
 
-<<<<<<< HEAD
 def create_table_recipe(db: Session, recipeId: int, scale: str, categoryId: int, recipeTitle: str, recipeMaterials: dict, recipeInstructions: dict, recipeImage_pass: str):
     db_recipe = models.RecipeTable(recipeId=recipeId, scale=scale, categoryId=categoryId, recipeTitle=recipeTitle, recipeMaterials=recipeMaterials, recipeInstructions=recipeInstructions, recipeImage_pass=recipeImage_pass)
-=======
-def create_table_recipe(db: Session, recipeId: int, scale: str, recipeTitle: str, recipeMaterials: str, recipeInstructions: str, recipeImage_pass: str):
-    db_recipe = models.RecipeTable(recipeId=recipeId, scale=scale, recipeTitle=recipeTitle, recipeMaterials=recipeMaterials, recipeInstructions=recipeInstructions, recipeImage_pass=recipeImage_pass)
->>>>>>> 4344d5026f46d38d4b1fa1a30d16a639153028cf
     db.add(db_recipe)
     db.commit()
     db.refresh(db_recipe)
 
-<<<<<<< HEAD
 def update_table_recipe(db: Session, recipeId: int, scale: str, categoryId: int, recipeImage_pass: str):
     query = db.query(models.RecipeTable)
     db_recipe_update = query.filter(models.RecipeTable.recipeId == recipeId, models.RecipeTable.scale == scale, models.RecipeTable.categoryId == categoryId).first()
@@ -85,6 +79,3 @@ def update_table_recipe(db: Session, recipeId: int, scale: str, categoryId: int,
 def get_table_recipe(db: Session, recipeId: int, scale: str, categoryId: int):
     db_recipe = db.query(models.RecipeTable).filter(models.RecipeTable.recipeId == recipeId, models.RecipeTable.scale == scale, models.RecipeTable.categoryId == categoryId).all()
     return db_recipe
-=======
-#def get_table_ranking(db: Session, )
->>>>>>> 4344d5026f46d38d4b1fa1a30d16a639153028cf

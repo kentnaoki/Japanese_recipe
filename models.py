@@ -27,14 +27,8 @@ class RecipeTable(Base):
     id = Column(Integer, index=True)
     recipeId = Column(Integer, index=True, primary_key=True)
     scale = Column(String, index=True, primary_key=True)
-<<<<<<< HEAD
     categoryId = Column(Integer, index=True, primary_key=True)
     recipeTitle = Column(String, index=True)
     recipeMaterials = Column(JSON, index=True)
     recipeInstructions = Column(JSON, index=True)
-=======
-    recipeTitle = Column(String, index=True)
-    recipeMaterials = Column(String, index=True)
-    recipeInstructions = Column(String, index=True)
->>>>>>> 4344d5026f46d38d4b1fa1a30d16a639153028cf
     recipeImage_pass = Column(String, index=True)
