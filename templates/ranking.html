@@ -10,11 +10,11 @@
             <div class="each-food">
                 <div class="food-image">
                     <p class="rank">{{ loop.index }}</p>
-                    <a href="/recipe?recipeUrlId={{ recipe.recipeUrlId }}"><img src="{{ recipe.foodImageUrl }}"></a>
+                    <a href="/{{ recipe.scale }}/{{ recipe.categoryId }}/recipe?recipeId={{ recipe.recipeId }}"><img src=".{{ recipe.recipeImage_pass }}"></a>
                 </div>
                 <div class="recipe-text">
                     <div class="recipe-title">
-                        <p><a href="/recipe?recipeUrlId={{ recipe.recipeUrlId }}">{{ recipe.recipeTitle }}</a></p>
+                        <p><a href="/{{ recipe.scale }}/{{ recipe.categoryId }}/recipe?recipeId={{ recipe.recipeId }}">{{ recipe.recipeTitle }}</a></p>
                     </div>
                     <div class="recipe-description">
                         <p>{{ recipe.recipeDescription }}</p>

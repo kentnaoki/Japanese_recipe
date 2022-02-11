@@ -3,11 +3,11 @@
 
 <div class="categories">
     <div class="recipeName">
-        <h2>{{ recipeName }}</h2>
+        <h2>{{ recipeTitle }}</h2>
     </div>
     <br>
     <div class="image">
-        <img src="{{ imageUrl }}">
+        <img src="../../{{ recipes.recipeImage_pass }}">
     </div>
     <div class="materials">
         <table class="materials_table">
@@ -16,7 +16,7 @@
                     <th>Items</th>
                     <th>Servings</th>
                 </tr>
-                {% for item, serving in materials.items() %}
+                {% for item, serving in recipeMaterials.items() %}
                 <tr>
                     <td>{{ item }}</td>
                     <td>{{ serving }}</td>
@@ -28,10 +28,10 @@
     <br>
     <hr>
     <div class="recipeDescription">
-        {% for index, description in descriptions.items() %}
-        <p class="index">{{ index }}. </p>
-        <p class="description">{{ description }}</p>
-        <hr>
+        {% for description in recipeInstructions %}
+            <p class="index">{{ loop.index }}. </p>
+            <p class="description">{{ description }}</p>
+            <hr>
         {% endfor %}
     </div>
 </div>

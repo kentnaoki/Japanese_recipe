@@ -1,6 +1,5 @@
 import hashlib
 import database
-from models import User
 from starlette.status import HTTP_401_UNAUTHORIZED
 from fastapi import HTTPException
  
