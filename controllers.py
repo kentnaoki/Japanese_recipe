@@ -115,8 +115,8 @@ async def recipe(request: Request, scale: str, categoryId: int, recipeId: int, d
 
     recipeMaterials = {}
     recipeInstructions = []
-    recipeTitle = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": recipes.recipeTitle, }, )
-    recipeTitle = recipeTitle.json()["translations"][0]["text"]
+    recipeTitle = crud.get_table_ranking_recipeTitle(db=db, recipeId=recipeId, scale=scale, categoryId=categoryId)[0]
+    recipeTitle = recipeTitle.recipeTitle
 
     for item, serving in recipes.recipeMaterials.items():
         recipeMaterials[item] = serving

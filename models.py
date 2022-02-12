@@ -24,7 +24,6 @@ class RankingTable(Base):
 
 class RecipeTable(Base):
     __tablename__ = "recipes"
-    id = Column(Integer, index=True)
     recipeId = Column(Integer, index=True, primary_key=True)
     scale = Column(String, index=True, primary_key=True)
     categoryId = Column(Integer, index=True, primary_key=True)

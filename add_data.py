@@ -232,7 +232,7 @@ def update_ranking_db(db: Session = Depends(get_db)):
     print("finish")
 
 def create_recipe_db(db: Session = Depends(get_db)):
-    scales = ["large"]
+    scales = ["medium"]
     for scale in scales:
         path = f'./images/recipe/{scale}/*/*'
         files = glob.glob(path)
@@ -240,7 +240,7 @@ def create_recipe_db(db: Session = Depends(get_db)):
         for file in files:
             categoryId = file.split("/")[-2]
             recipeId = file.split("/")[-1].split(".")[0]
-        
+            
             db = SessionLocal()
             isDataInDatabase = crud.get_table_recipe(db=db, recipeId=recipeId, scale=scale, categoryId=categoryId)
             
@@ -263,11 +263,14 @@ def create_recipe_db(db: Session = Depends(get_db)):
                     material = item.text.replace('\n', '')
                     items = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": material, }, )
                     items = items.json()["translations"][0]["text"]
+                    
+                    serving = serving.text.replace('\n', '')
                     servings = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": serving, }, )
                     servings = servings.json()["translations"][0]["text"]
-                    serving = serving.text.replace('\n', '')
+                    
+                    
 
-                    recipeMaterials[material] = serving
+                    recipeMaterials[items] = servings
                 instructions = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_howto.section_border_top.section_padding_top.mt32.mb21 > ol > li > span.recipe_howto__text")
                 recipeInstructions = {}
 
@@ -280,7 +283,6 @@ def create_recipe_db(db: Session = Depends(get_db)):
                 recipeTitle_soup = soup.select("#recipeDetailTitle > h1")
                 recipeTitle = recipeTitle_soup[0].text.split(' ')[0]
 
-                
                 crud.create_table_recipe(db=db, recipeId=recipeId, scale=scale, categoryId=categoryId, recipeTitle=recipeTitle, recipeMaterials=recipeMaterials, recipeInstructions=recipeInstructions, recipeImage_pass=recipeImage_pass)
                 print(recipeId, scale, "create")
     print("finish")

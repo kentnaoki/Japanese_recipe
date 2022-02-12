@@ -19,7 +19,6 @@ class Ranking(BaseModel):
     recipeImage_pass: str
 
 class Recipe(BaseModel):
-    id: int
     recipeId: int
     scale: str
     categoryId: int

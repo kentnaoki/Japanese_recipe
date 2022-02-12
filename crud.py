@@ -64,6 +64,10 @@ def get_table_ranking(db: Session, categoryId: int, scale: str):
     db_ranking_data = db.query(models.RankingTable).filter(models.RankingTable.categoryId == categoryId, models.RankingTable.scale == scale).all()
     return db_ranking_data
 
+def get_table_ranking_recipeTitle(db: Session, categoryId: int, scale: str, recipeId: int):
+    db_ranking_data = db.query(models.RankingTable).filter(models.RankingTable.categoryId == categoryId, models.RankingTable.scale == scale, models.RankingTable.recipeId == recipeId).all()
+    return db_ranking_data
+
 def create_table_recipe(db: Session, recipeId: int, scale: str, categoryId: int, recipeTitle: str, recipeMaterials: dict, recipeInstructions: dict, recipeImage_pass: str):
     db_recipe = models.RecipeTable(recipeId=recipeId, scale=scale, categoryId=categoryId, recipeTitle=recipeTitle, recipeMaterials=recipeMaterials, recipeInstructions=recipeInstructions, recipeImage_pass=recipeImage_pass)
     db.add(db_recipe)
