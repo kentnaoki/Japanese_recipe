@@ -232,7 +232,7 @@ def update_ranking_db(db: Session = Depends(get_db)):
     print("finish")
 
 def create_recipe_db(db: Session = Depends(get_db)):
-    scales = ["medium"]
+    scales = ["small"]
     for scale in scales:
         path = f'./images/recipe/{scale}/*/*'
         files = glob.glob(path)
@@ -259,18 +259,25 @@ def create_recipe_db(db: Session = Depends(get_db)):
                 servings = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_material.mb32 > ul > li > .recipe_material__item_serving")
                 recipeMaterials = {}
 
-                for item, serving in zip(items, servings):
-                    material = item.text.replace('\n', '')
-                    items = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": material, }, )
-                    items = items.json()["translations"][0]["text"]
-                    
-                    serving = serving.text.replace('\n', '')
-                    servings = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": serving, }, )
-                    servings = servings.json()["translations"][0]["text"]
-                    
-                    
+                if scale == "large" or scale == "medium":
+                    for item, serving in zip(items, servings):
+                        material = item.text.replace('\n', '')
+                        items = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": material, }, )
+                        items = items.json()["translations"][0]["text"]
+                        
+                        serving = serving.text.replace('\n', '')
+                        servings = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": serving, }, )
+                        servings = servings.json()["translations"][0]["text"]
 
-                    recipeMaterials[items] = servings
+                        recipeMaterials[items] = servings
+
+                elif scale == "small":
+                    for item, serving in zip(items, servings):
+                        items = item.text.replace('\n', '')
+                        servings = serving.text.replace('\n', '')
+                        
+                        recipeMaterials[items] = servings
+
                 instructions = soup.select("#recipeDetail > div.recipe_detail.side_margin > section.recipe_howto.section_border_top.section_padding_top.mt32.mb21 > ol > li > span.recipe_howto__text")
                 recipeInstructions = {}
 

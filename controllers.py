@@ -117,10 +117,18 @@ async def recipe(request: Request, scale: str, categoryId: int, recipeId: int, d
     recipeInstructions = []
     recipeTitle = crud.get_table_ranking_recipeTitle(db=db, recipeId=recipeId, scale=scale, categoryId=categoryId)[0]
     recipeTitle = recipeTitle.recipeTitle
-
-    for item, serving in recipes.recipeMaterials.items():
-        recipeMaterials[item] = serving
     
+    if scale == "large" or scale == "medium":
+        for item, serving in recipes.recipeMaterials.items():
+            recipeMaterials[item] = serving
+    elif scale == "small":
+        for item, serving in recipes.recipeMaterials.items():
+            items = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": item, }, )
+            items = items.json()["translations"][0]["text"]
+            servings = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": serving, }, )
+            servings = servings.json()["translations"][0]["text"]
+            recipeMaterials[items] = servings
+
     for instruction in recipes.recipeInstructions.values():
         instructions = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": instruction, }, )
         instructions = instructions.json()["translations"][0]["text"]
