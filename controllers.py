@@ -1,10 +1,9 @@
 #from tkinter import image_names
-from fastapi import FastAPI, Form, Depends, HTTPException, status
+from fastapi import FastAPI, Form, Depends, HTTPException, status, File, UploadFile
 from starlette.templating import Jinja2Templates
 from starlette.requests import Request
 
 from fastapi.responses import HTMLResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCredentials
 
 from starlette.status import HTTP_401_UNAUTHORIZED
 
@@ -14,24 +13,18 @@ import hashlib
 
 import re
 
-from datetime import datetime, timedelta
-from auth import auth
-
 from starlette.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 import requests
 import json
 from typing import Optional
-import time
 
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 
 from bs4 import BeautifulSoup
-
-from fastapi import File, UploadFile
 
 from typing import List
 
@@ -42,7 +35,7 @@ import crud
 import models
 import schemas
 from database import SessionLocal, engine
-import cv2
+
 
 app = FastAPI(
     title = "Japanese food recipe",
@@ -51,11 +44,6 @@ app = FastAPI(
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/images", StaticFiles(directory="images"), name="images")
-
-pattern = re.compile(r'\w{4,20}')  # 任意の4~20の英数字を示す正規表現
-pattern_pw = re.compile(r'\w{6,20}')  # 任意の6~20の英数字を示す正規表現
-pattern_mail = re.compile(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$')
-
 
 templates = Jinja2Templates(directory="templates")
 jinja_env = templates.env
