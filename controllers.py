@@ -9,20 +9,12 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 import database
 
-import hashlib
-
-import re
-
 from starlette.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 import requests
 import json
 from typing import Optional
-
-from pydantic import BaseModel
-from passlib.context import CryptContext
-from jose import JWTError, jwt
 
 from bs4 import BeautifulSoup
 
@@ -40,7 +32,11 @@ from database import SessionLocal, engine
 app = FastAPI(
     title = "Japanese food recipe",
     description = "Authentic Japanese food recipe for people who live outside Japan",
-    version = "1.0"
+    version = "1.0",
+    servers=[
+        {"url": "https://www.japanese-recipe.co.uk"},
+    ],
+    root_path="/"
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/images", StaticFiles(directory="images"), name="images")
@@ -75,7 +71,7 @@ async def read_large(request: Request, large_categoryId: int, db: Session = Depe
 
 
 @app.get("/medium", response_class=HTMLResponse)
-def read_medium(request: Request, medium_categoryId: Optional[int] = None, db: Session = Depends(get_db)):
+async def read_medium(request: Request, medium_categoryId: Optional[int] = None, db: Session = Depends(get_db)):
     if medium_categoryId == None:
         categories = crud.get_table_category(db=db, scale="medium")    # categories (categories.scale, categories.categoryId, categories.categoryName, categories.categoryImage_pass)
         return templates.TemplateResponse("medium.html", {"request": request, "mediumCategories": categories})
