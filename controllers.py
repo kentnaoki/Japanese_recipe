@@ -1,4 +1,3 @@
-#from tkinter import image_names
 from fastapi import FastAPI, Form, Depends, HTTPException, status, File, UploadFile
 from starlette.templating import Jinja2Templates
 from starlette.requests import Request
@@ -27,16 +26,13 @@ import crud
 import models
 import schemas
 from database import SessionLocal, engine
+from pathlib import Path
 
 
 app = FastAPI(
     title = "Japanese food recipe",
     description = "Authentic Japanese food recipe for people who live outside Japan",
     version = "1.0",
-    servers=[
-        {"url": "https://www.japanese-recipe.co.uk"},
-    ],
-    root_path="/"
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/images", StaticFiles(directory="images"), name="images")
