@@ -2,8 +2,20 @@
 {% block content %}
 
 <div class="categories">
-    <div class="recipeName">
-        <h2>{{ recipeTitle }}</h2>
+    <br>
+    <div class="recipeName-header">
+        <div class="back-button">
+            <a href="#" class="btn btn-radius-gradient" onclick="history.back()">Back >></a>
+            
+        </div>
+        <div class="recipeName">
+            <h2>{{ recipeTitle }}</h2>
+        </div>
+        <div class="login-div">
+            <div class="login-button">
+                <a href="/register-login" class="btn btn-dark">Login/Register</a>
+            </div>
+        </div>
     </div>
     <br>
     <div class="image">
@@ -26,7 +38,7 @@
         </table>
     </div>
     <br>
-    <hr>
+    <hr style="margin-top: 50px;">
     <div class="recipeDescription">
         {% for description in recipeInstructions %}
             <p class="index">{{ loop.index }}. </p>

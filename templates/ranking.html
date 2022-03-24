@@ -3,8 +3,19 @@
 
 
 <div class="categories">
-    <div class="categoryName">
-        <h2>{{ categoryName }}</h2>
+    <br>
+    <div class="categoryName-head">
+        <div class="back-button">
+            <a href="#" class="btn btn-radius-gradient" onclick="history.back()">Back >></a>
+        </div>
+        <div class="categoryName-ranking">
+            <h2>{{ categoryName }}</h2>
+        </div>
+        <div class="login-div">
+            <div class="login-button">
+                <a href="/register-login" class="btn btn-dark">Login/Register</a>
+            </div>
+        </div>
     </div>
         {% for recipe in rankingRecipe %}
             <div class="each-food">

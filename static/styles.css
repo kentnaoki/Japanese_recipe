@@ -1,6 +1,96 @@
 header {
   background-color: black;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  align-items: center;
+  height: 120px;
 }
+
+.menu-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  width: 70px;
+  left: 0;
+  position: absolute;
+  height: 120px;
+}
+
+.bar-div {
+  text-align: center;
+  height: 10px;
+  cursor: pointer;
+}
+
+.bar {
+  height: 10px;
+  width: 70%;
+  height: 5px;
+  border-radius: 2px;
+  display: inline-block;
+  background-color: #ffffff;
+}
+
+header p {
+margin-left: auto;
+cursor: pointer;
+margin: 0;
+line-height: 46px;
+z-index: 150;
+color: white;
+text-align: center;
+}
+
+.navi {
+background: rgb(221, 110, 110);
+position: fixed;
+overflow: hidden;
+top: 0;
+bottom: 0;
+left: 0;
+text-align: center;
+width: 0; 
+transition: 0.2s;
+z-index: 100;
+}
+.open-menu {
+width: 50%;   
+}
+nav .ul-outline {
+padding: 50px 20px;
+margin-top: 100px;
+}
+nav .ul-categories {
+  margin-top: 0;
+} 
+nav .navi li {
+list-style: none;
+text-align: left;
+padding: 10px 0;
+}
+nav .navi li a {
+display: block;
+color: white;
+}
+
+.menu-background {
+position: fixed;
+top: 0;
+right: 0;
+display: block;
+width: 0;
+height: 0;
+background: black;
+opacity: 0.8;
+}
+
+.open {
+width: 100%;
+height: 100%;
+}
+
 .logo {
   text-align: center;
   padding-top: 10px;
@@ -24,16 +114,19 @@ header {
     color: black;
 }
 
+.head {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
 .row {
-  display: block;
-  text-align: center;
-  padding-top: 1.5em;
-  padding-bottom: 0.5em;
+  display: flex;
+  justify-content: center;
+  position: relative;
 }
 
 .col-md-10 {
-  margin: 0 auto;
-  display: inline-block;
+  text-align: center;
 }
 
 .col-md-10 h1 {
@@ -41,9 +134,73 @@ header {
   font-size: 30px;
 }
 
+.login-div {
+  vertical-align: middle;
+  position: absolute;
+  right: 0;
+}
+
+.back-button {
+  vertical-align: middle;
+  position: absolute;
+  left: 0;
+
+  display: inline-block;
+
+  padding: 0.3rem;
+
+  border-radius: 100vh;
+  background: #f2f5f6;
+  background: -webkit-linear-gradient(
+    to top,
+    #f2f5f6 0%,
+    #e3eaed 37%,
+    #96a1a5 100%
+  );
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    from(#f2f5f6),
+    color-stop(37%, #e3eaed),
+    to(#96a1a5)
+  );
+  background: -webkit-linear-gradient(
+    top,
+    #f2f5f6 0%,
+    #e3eaed 37%,
+    #96a1a5 100%
+  );
+  background: linear-gradient(to bottom, #f2f5f6 0%, #e3eaed 37%, #96a1a5 100%);
+
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f2f5f6', endColorstr='#96a1a5', GradientType=0);
+}
+
+a.btn-radius-gradient {
+  border-radius: 100vh;
+  background: #e3eaed;
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    from(#e3eaed),
+    to(#f2f5f6)
+  );
+  background: -webkit-linear-gradient(top, #e3eaed 0%, #f2f5f6 100%);
+  background: linear-gradient(to bottom, #e3eaed 0%, #f2f5f6 100%);
+
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#e3eaed', endColorstr='#f2f5f6', GradientType=0);
+}
+
+a.btn-radius-gradient:hover {
+  -webkit-transform: scale(1.05);
+  transform: scale(1.05);
+}
+
 .login-button {
   margin: 0 auto;
-  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 2px 2px 4px gray;
 }
 
 .categories {
@@ -51,37 +208,40 @@ header {
   margin: auto;
 }
 
+.categories-header {
+  display: flex;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  align-items: center;
+}
+
 .categoryName h2 {
   margin: 0 0 1.5em 5em;
 }
 
 .head-title {
-  display: inline-block;
+  margin-right: 20px;
 }
 
 .category-size {
-  display: inline-block;
+  display: flex;
+  justify-content: space-evenly;
+  flex-basis: 200px;
 }
 
-.large {
-  display: inline-block;
-}
 .large button {
   font-size: 15px;
+  box-shadow: 2px 2px 4px gray;
 }
 
-.medium {
-  display: inline-block;
-}
 .medium button {
   font-size: 15px;
+  box-shadow: 2px 2px 4px gray;
 }
 
-.small {
-  display: inline-block;
-}
 .small button {
   font-size: 15px;
+  box-shadow: 2px 2px 4px gray;
 }
 
 #nav {
@@ -120,6 +280,18 @@ header {
   text-align: center;
 }
 
+.categoryName-head {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  margin-top: 30px;
+  margin-bottom: 60px;
+  align-items: center;
+}
+
+.categoryName-ranking {
+  text-align: center;
+}
 
 .food-image {
   display: inline-block;
@@ -159,9 +331,18 @@ header {
   margin-bottom: auto;
 }
 
+.recipeName-header {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  align-items: center;
+}
+
 .recipeName {
-  margin: 0 auto;
   text-align: center;
+  flex-basis: 75%;
 }
 
 .materials {
@@ -202,9 +383,19 @@ header {
   height: 400px;
 }
 
+
 .register-login {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
   margin:40px 0px;
+}
+
+.under-construction {
+  text-align: center;
+  margin: 100px;
+}
+
+.under-construction img {
+  height: 100px;
 }

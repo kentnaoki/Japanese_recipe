@@ -4,11 +4,8 @@ from starlette.requests import Request
 
 from fastapi.responses import HTMLResponse
 
-from starlette.status import HTTP_401_UNAUTHORIZED
-
 import database
 
-from starlette.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 import requests
@@ -26,7 +23,6 @@ import crud
 import models
 import schemas
 from database import SessionLocal, engine
-from pathlib import Path
 
 
 app = FastAPI(
@@ -36,6 +32,8 @@ app = FastAPI(
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/images", StaticFiles(directory="images"), name="images")
+app.mount("/js", StaticFiles(directory="js"), name="js")
+app.mount("/templates", StaticFiles(directory="templates"), name="templates")
 
 templates = Jinja2Templates(directory="templates")
 jinja_env = templates.env
@@ -62,8 +60,8 @@ async def index(request: Request, db: Session = Depends(get_db)):
 async def read_large(request: Request, large_categoryId: int, db: Session = Depends(get_db)):
     rankingRecipe = crud.get_table_ranking(db=db, categoryId=large_categoryId, scale="large")   # rankingRecipe (rankingRecipe.recipeId, rankingRecipe.categoryId, rankingRecipe.scale, rankingRecipe.categoryName, rankingRecipe.recipeTitle, rankingRecipe.recipeDescription, rankingRecipe.recipeImage_pass)
     #print(rankingRecipe)
-    #categoryName = rankingRecipe[0].categoryName
-    return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe})
+    categoryName = rankingRecipe[0].categoryName
+    return templates.TemplateResponse("ranking.html", {"request": request, "rankingRecipe": rankingRecipe, "categoryName": categoryName})
 
 
 @app.get("/medium", response_class=HTMLResponse)
@@ -103,14 +101,14 @@ async def recipe(request: Request, scale: str, categoryId: int, recipeId: int, d
             recipeMaterials[item] = serving
     elif scale == "small":
         for item, serving in recipes.recipeMaterials.items():
-            items = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": item, }, )
+            items = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "e9acbae0-1a26-0afe-ec93-0e75792d94f7:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": item, }, )
             items = items.json()["translations"][0]["text"]
-            servings = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": serving, }, )
+            servings = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "e9acbae0-1a26-0afe-ec93-0e75792d94f7:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": serving, }, )
             servings = servings.json()["translations"][0]["text"]
             recipeMaterials[items] = servings
 
     for instruction in recipes.recipeInstructions.values():
-        instructions = requests.get("https://api.deepl.com/v2/translate", params={"auth_key": "eca69a9d-114a-85b0-7684-55ff284e0389", "source_lang": "JA", "target_lang": "EN-GB", "text": instruction, }, )
+        instructions = requests.get("https://api-free.deepl.com/v2/translate", params={"auth_key": "e9acbae0-1a26-0afe-ec93-0e75792d94f7:fx", "source_lang": "JA", "target_lang": "EN-GB", "text": instruction, }, )
         instructions = instructions.json()["translations"][0]["text"]
         recipeInstructions.append(instructions)
 

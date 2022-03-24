@@ -2,13 +2,35 @@
 <html lang="en">
 <head>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet" type="text/css">
+    <link href="/static/styles.css" rel="stylesheet" type="text/css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.9.0/css/flag-icon.css" rel="stylesheet">
     <meta charset="UTF-8">
     <title>Japanese Food Recipe</title>
 </head>
 <body>
 <header>
+    <div class="menu-bar">
+        <div id="bar-dynamic" class="three-bar-div">
+            <div class="bar-div"><span class="bar"></span></div>
+            <div class="bar-div"><span class="bar"></span></div>
+            <div class="bar-div"><span class="bar"></span></div>
+        </div>
+        <p id="menu">Menu</p>
+    </div>
+        <nav id="nav" class="navi">
+            <ul class="ul-outline">
+            <li><a href="#">About</a></li>
+            <li><a href="#">Categories</a></li>
+            <ul class="ul-categories">
+                <li><a href="/">Large</a></li>
+                <li><a href="/medium">Medium</a></li>
+                <li><a href="/small">Small</a></li>
+            </ul>
+            <li><a href="#">Contact</a></li>
+            <li><a href="/register-login">Login/Register</a></li>
+            </ul>    
+        </nav>
+        <div id="back" class="menu-background"></div>
     <div class="l-header">
         <div class="logo">
             <a href="/"><span class="flag-icon flag-icon-jp"></span> Japanese Food Recipe</a><p>Recipe website to introduce authentic Japanese foods</p>
@@ -16,26 +38,17 @@
     </div>
 </header>
     <div class="main">
-        <div class="row">
-            <div class="col-md-10">
-                <h1>Welcome to the Japanese Food Recipe website!</h1>
-            </div>
-            <div class="login-button">
-                <a href="/register-login" class="btn btn-dark">Login/Register</a>
-            </div>
-        </div>
-        <hr>
-        <br>
             {% block content %}
             <!-- main contents -->
             {% endblock %}
     </div>
     <br>
-    <hr>
-<!--<footer>
+    <hr color="black">
+    <footer>
         <div align="center">
-            <p>Powered by FastAPI 0.36.0 &amp; starlette 0.12.9</p>
+            <p>Powered by Rakuten Web Service & DeepL</p>
         </div>
-    </footer> -->
+    </footer>
+<script src="../js/dropdown.js"></script>
 </body>
 </html>
